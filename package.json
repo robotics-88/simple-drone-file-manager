@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "node --watch index.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.2",
+    "pug": "^3.0.3"
+  }
+}
