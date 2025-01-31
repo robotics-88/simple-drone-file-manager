@@ -4,18 +4,23 @@ html
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1")
     title Robotics 88 File Manager
-    link(rel="stylesheet" href="static/pico.css")
+    link(rel="stylesheet" href="/static/pico.css")
 
-    link(rel="icon" type="image/png" sizes="16x16"   href="static/favicon-16x16.png")
-    link(rel="icon" type="image/png" sizes="32x32"   href="static/favicon-32x32.png")
-    link(rel="apple-touch-icon"      sizes="180x180" href="static/apple-touch-icon.png")
-    link(rel="manifest"                              href="static/site.webmanifest")
+    link(rel="icon" type="image/png" sizes="16x16"   href="/static/favicon-16x16.png")
+    link(rel="icon" type="image/png" sizes="32x32"   href="/static/favicon-32x32.png")
+    link(rel="apple-touch-icon"      sizes="180x180" href="/static/apple-touch-icon.png")
+    link(rel="manifest"                              href="/static/site.webmanifest")
   body
     main
       h1 File Manager
-      ul: each file in files
-        li
-          a(href='download/'+file)= file
-          | &nbsp;
-          a(href='delete/'+file) delete
-    script(src="static/script.js")
+      table
+        each file in files
+          tr
+            td= file
+            td: a(href='download/'+file) download
+            td: a(href="#" onclick='deleteFile("'+file+'")') delete
+      p: a(href="download-all/") Download All
+      p bad link:
+        a(href='download/luna-x.jpg') download
+
+    script(src="/static/script.js")
