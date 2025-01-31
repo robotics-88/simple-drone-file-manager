@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node --watch index.js"
+    "start": "node index.js"
   },
   "type": "module",
   "dependencies": {
