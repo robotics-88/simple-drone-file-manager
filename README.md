@@ -9,9 +9,12 @@ A file manager for (d)eccos.
 git clone git@github.com:robotics-88/cocoon.git
 cd cocoon
 npm install
-mkdir public
-npm start
 ```
-- Files go in `cocoon/public`.
-- Connect to `localhost:9999/`!
 
+Then you will need to create a `.env` file.
+The values are up to you!
+```
+PUBLIC_DIRECTORY='/home/your-username/public'
+PORT=9999
+```
+Then run with `npm start` and connect!
