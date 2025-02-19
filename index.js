@@ -39,7 +39,7 @@ app.get('/download-all', (request, response, next)=> {
     zip.on('warning', next)
     zip.on('error', next)
     zip.pipe(response)
-    zip.directory('./public/', false)
+    zip.directory(PUBLIC_DIRECTORY, false)
     zip.finalize()
   }
   catch (error) { next(error) }
@@ -50,7 +50,7 @@ app.get('/download-all', (request, response, next)=> {
 app.get('/download/:fileName', async (request, response, next)=> {
   try {
     let fileName = request.params.fileName
-    response.download('public/' + fileName)
+    response.download(PUBLIC_DIRECTORY + fileName)
   }
   catch (error) { next(error) }
 })
@@ -60,8 +60,8 @@ app.get('/download/:fileName', async (request, response, next)=> {
 app.get('/delete/:fileName', async (request, response, next)=> {
   try {
     let fileName = request.params.fileName
-    let files = await fs.readdir('./public/')
-    await fs.unlink('public/' + fileName)
+    let files = await fs.readdir(PUBLIC_DIRECTORY)
+    await fs.unlink(PUBLIC_DIRECTORY + fileName)
     response.redirect('/')
   }
   catch (error) { next(error) }
