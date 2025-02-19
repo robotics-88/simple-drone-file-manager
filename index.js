@@ -1,25 +1,32 @@
+import 'dotenv/config'
+
+
 import fs from 'node:fs/promises'
 import express from 'express'
 import archiver from 'archiver'
 
-// TODO
-// handle sub-directories
 
-const PORT = 9999
+const PORT = process.env['PORT']
+const PUBLIC_DIRECTORY = process.env['PUBLIC_DIRECTORY']
 const ZIP_FILE_NAME = 'files.zip'
+
 
 let app = express()
 app.set('view engine', 'pug')
 app.use('/static', express.static('static'))
 
+
 // Home Page
 app.get('/', async (request, response, next)=> {
   try {
-    let files = await fs.readdir('./public/')
+    // TODO
+    // handle sub-directories
+    let files = await fs.readdir(PUBLIC_DIRECTORY)
     response.render('index', { files })
   }
   catch (error) { next(error) }
 })
+
 
 // Download All Files
 app.get('/download-all', (request, response, next)=> {
@@ -38,6 +45,7 @@ app.get('/download-all', (request, response, next)=> {
   catch (error) { next(error) }
 })
 
+
 // Download File
 app.get('/download/:fileName', async (request, response, next)=> {
   try {
@@ -46,6 +54,7 @@ app.get('/download/:fileName', async (request, response, next)=> {
   }
   catch (error) { next(error) }
 })
+
 
 // Delete File
 app.get('/delete/:fileName', async (request, response, next)=> {
@@ -58,11 +67,13 @@ app.get('/delete/:fileName', async (request, response, next)=> {
   catch (error) { next(error) }
 })
 
+
 // Error Handler
 app.use((error, request, response, next)=> {
   console.error(error.stack)
   response.render('error', { error: error.stack })
 })
+
 
 // Start Server
 app.listen(PORT, ()=> { console.log("Listening on port", PORT)})
