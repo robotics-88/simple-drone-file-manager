@@ -13,8 +13,10 @@ npm install
 
 Then you will need to create a `.env` file.
 The values are up to you!
+
+Note that `PUBLIC_DIRECTORY` must be an absolute path, no `~`s allowed!
 ```
-PUBLIC_DIRECTORY='/home/your-username/public'
+PUBLIC_DIRECTORY='/home/username/r88_public/records/<date-time>/<burn_unit>/flight_<timestamp>/'
 PORT=9999
 ```
 Then run with `npm start` and connect!
