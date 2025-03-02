@@ -16,7 +16,7 @@ The values are up to you!
 
 Note that `PUBLIC_DIRECTORY` must be an absolute path, no `~`s allowed!
 ```
-PUBLIC_DIRECTORY='/home/username/r88_public/records/<date-time>/<burn_unit>/flight_<timestamp>/'
+PUBLIC_DIRECTORY='/home/username/r88_public/records/'
 PORT=9999
 ```
 Then run with `npm start` and connect!
