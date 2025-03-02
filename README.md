@@ -6,7 +6,7 @@ A file manager for (d)eccos.
 ## but how do I...???!!!
 
 ```sh
-git clone git@github.com:robotics-88/cocoon.git
+git clone -b file-browser git@github.com:robotics-88/cocoon.git
 cd cocoon
 npm install
 ```
