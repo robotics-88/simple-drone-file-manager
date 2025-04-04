@@ -13,12 +13,13 @@ html
   body
     main
       h1 File Manager
-      table
-        each file in files
-          tr
-            td= file
-            td: a(href='download/'+file) download
-            td: a(href="#" onclick='deleteFile("'+file+'")') delete
-      p: a(href="download-all/") Download All
+      each thing in structure
+        p: b= 'Flight ' + thing.directory
+        p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
+        each flight in thing.flights
+          each files in flight
+            ol
+              each file in files
+                li: a(href='download/'+file)=file.split('.')[1]
 
     script(src="/static/script.js")

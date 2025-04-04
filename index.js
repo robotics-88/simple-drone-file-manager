@@ -2,6 +2,7 @@ import 'dotenv/config'
 
 
 import fs from 'node:fs/promises'
+import fss from 'node:fs'
 import express from 'express'
 import archiver from 'archiver'
 
@@ -19,10 +20,30 @@ app.use('/static', express.static('static'))
 // Home Page
 app.get('/', async (request, response, next)=> {
   try {
-    // TODO
-    // handle sub-directories
-    let files = await fs.readdir(PUBLIC_DIRECTORY)
-    response.render('index', { files })
+
+    let options =  { withFileTypes: true }
+    let options2 = { withFileTypes: true, recursive: true }
+    let files = await fs.readdir(PUBLIC_DIRECTORY, options)
+    let structure = files
+      .filter(t=> t.isDirectory())
+      .map(d=> ({
+        directory: d.name,
+        flights: fss
+          .readdirSync(d.parentPath + '/' + d.name, options)
+          .filter(f=> f.isDirectory())
+          .map(f=> ({
+            files: fss
+              .readdirSync(f.parentPath + '/' + f.name, options2)
+              .filter(f=> f.isFile())
+              .map(f=> f.parentPath + '/' + f.name)
+          })),
+        log: fss
+          .readdirSync(d.parentPath + '/' + d.name, options)
+          .filter(f=> f.isFile() && f.name.split('.')[1] == 'log')
+          .map(l=> l.parentPath + '/' + l.name )[0] ?? null
+      }))
+
+    response.render('index', { structure })
   }
   catch (error) { next(error) }
 })
@@ -47,10 +68,10 @@ app.get('/download-all', (request, response, next)=> {
 
 
 // Download File
-app.get('/download/:fileName', async (request, response, next)=> {
+app.get('/download/:filePath', async (request, response, next)=> {
   try {
-    let fileName = request.params.fileName
-    response.download(PUBLIC_DIRECTORY + fileName)
+    let filePath = request.params.filePath
+    response.download(filePath)
   }
   catch (error) { next(error) }
 })
