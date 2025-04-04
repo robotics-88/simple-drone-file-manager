@@ -20,6 +20,6 @@ html
           each files in flight
             ol
               each file in files
-                li: a(href='download/'+encodeURIComponent(file))=file.split('.')[1]
+                li: a(href='download/'+encodeURIComponent(file.path))=file.name
 
     script(src="/static/script.js")

@@ -35,7 +35,10 @@ app.get('/', async (request, response, next)=> {
             files: fss
               .readdirSync(f.parentPath + '/' + f.name, options2)
               .filter(f=> f.isFile())
-              .map(f=> f.parentPath + '/' + f.name)
+              .map(f=> ({
+                path: f.parentPath + '/' + f.name,
+                name: f.name
+              }))
           })),
         log: fss
           .readdirSync(d.parentPath + '/' + d.name, options)
