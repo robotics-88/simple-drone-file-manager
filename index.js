@@ -112,12 +112,14 @@ app.get('/download-all', (request, response, next)=> {
 
 
 // Download File
-app.get('/download/:filePath', async (request, response, next)=> {
+app.get('/download/:filePath(*)', async (req, res, next) => {
   try {
-    let filePath = request.params.filePath
-    response.download(filePath)
+    const relativePath = req.params.filePath
+    const absolutePath = path.join(PUBLIC_DIRECTORY, relativePath)
+    res.download(absolutePath)
+  } catch (error) {
+    next(error)
   }
-  catch (error) { next(error) }
 })
 
 
