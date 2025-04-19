@@ -10,16 +10,29 @@ html
     link(rel="icon" type="image/png" sizes="32x32"   href="/static/favicon-32x32.png")
     link(rel="apple-touch-icon"      sizes="180x180" href="/static/apple-touch-icon.png")
     link(rel="manifest"                              href="/static/site.webmanifest")
+
+    style.
+      .content {
+        padding-left: 1.5em;
+      }
   body
     main
       h1 File Manager
+
       each thing in structure
-        p: b= 'Flight ' + thing.directory
-        p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
-        each flight in thing.flights
-          each files in flight
-            ol
-              each file in files
-                li: a(href='download/'+encodeURIComponent(file.path))=file.name
+        details
+          summary
+            h2= thing.directory
+
+          .content
+            if thing.log
+              p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
+
+            each flight in thing.flights
+              h3= flight.name
+              ol
+                each file in flight.files
+                  li
+                    a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
 
     script(src="/static/script.js")
