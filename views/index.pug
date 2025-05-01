@@ -15,6 +15,16 @@ html
       .content {
         padding-left: 1.5em;
       }
+
+      summary.summary-label {
+        display: inline-flex;
+        align-items: center;
+        font-size: 1.25em;
+        font-weight: bold;
+        cursor: pointer;
+        list-style-position: inside;
+      }
+
   body
     main
       header(style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2em;")
@@ -23,15 +33,14 @@ html
 
       each thing in structure
         details
-          summary
-            h2= thing.directory
+          summary.summary-label= thing.directory
 
           .content
             if thing.log
               p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
 
             each flight in thing.flights
-              h3= flight.name
+              h5= flight.name
               ol
                 each file in flight.files
                   li
