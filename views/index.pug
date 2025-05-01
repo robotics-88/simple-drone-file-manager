@@ -16,6 +16,21 @@ html
         padding-left: 1.5em;
       }
 
+      .sticky-toolbar {
+        position: fixed;
+        top: 1em;
+        right: 1em;
+        display: flex;
+        gap: 0.5em;
+        z-index: 1000;
+      }
+
+      .sticky-toolbar button {
+        font-size: 0.75rem;
+        padding: 0.3em 0.6em;
+        border-radius: 6px;
+      }
+
       summary.summary-label {
         display: inline-flex;
         align-items: center;
@@ -39,12 +54,14 @@ html
         h1 Robotics 88 File Manager
         img(src="/static/logo.png" alt="Robotics 88 Logo" style="height: 48px;")
 
+      div(class="sticky-toolbar")
+        button(type="submit" onclick="submitBulkForm('download')" class="contrast secondary small")
+          i(class="fa fa-download") 
+        button(type="submit" onclick="submitBulkForm('delete')" class="contrast secondary small" style="color: red;")
+          i(class="fa fa-trash")
+
       form#bulkForm(method="post")
         input(type="hidden" name="_action" id="bulkAction")
-
-        div(style="margin-bottom: 1em;")
-          button(type="submit" onclick="submitBulkForm('download')" style="margin-right: 1em;") Download Selected
-          button(type="submit" onclick="submitBulkForm('delete')" style="color: red;") Delete Selected
 
         each thing in structure
           details
