@@ -5,12 +5,11 @@ html
     meta(name="viewport" content="width=device-width, initial-scale=1")
     title Robotics 88 File Manager
     link(rel="stylesheet" href="/static/pico.css")
-
-    link(rel="icon" type="image/png" sizes="16x16"   href="/static/favicon-16x16.png")
-    link(rel="icon" type="image/png" sizes="32x32"   href="/static/favicon-32x32.png")
-    link(rel="apple-touch-icon"      sizes="180x180" href="/static/apple-touch-icon.png")
-    link(rel="manifest"                              href="/static/site.webmanifest")
-    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
+    link(rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png")
+    link(rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png")
+    link(rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png")
+    link(rel="manifest" href="/static/site.webmanifest")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
 
     style.
       .content {
@@ -29,6 +28,10 @@ html
         font-weight: bold;
       }
 
+      summary.summary-label input[type="checkbox"] {
+        margin: 0 0.5em 0 0;
+      }
+
 
   body
     main
@@ -36,30 +39,56 @@ html
         h1 Robotics 88 File Manager
         img(src="/static/logo.png" alt="Robotics 88 Logo" style="height: 48px;")
 
-      each thing in structure
-        details
-          - const hasSubfolder = thing.flights && thing.flights.length > 0;
-          summary(class=hasSubfolder ? "summary-label bold" : "summary-label")= thing.directory
+      form#bulkForm(method="post")
+        input(type="hidden" name="_action" id="bulkAction")
+
+        div(style="margin-bottom: 1em;")
+          button(type="submit" onclick="submitBulkForm('download')" style="margin-right: 1em;") Download Selected
+          button(type="submit" onclick="submitBulkForm('delete')" style="color: red;") Delete Selected
+
+        each thing in structure
+          details
+            - const hasSubfolder = thing.flights && thing.flights.length > 0;
+            summary(class=hasSubfolder ? "summary-label bold" : "summary-label")
+              input(type="checkbox" name="folders" value=thing.directory style="margin-right: 0.5em;")
+              | #{thing.directory}
 
 
-          .content
-            if thing.log
-              p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
+            .content
+              if thing.log
+                p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
 
-            each flight in thing.flights
-              h5= flight.name
-              ol
-                each file in flight.files
-                  li(style="display: flex; justify-content: space-between; align-items: center;")
-                    a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
-                    button(
-                      class="delete-button"
-                      data-path=encodeURIComponent(file.path)
-                      title="Delete"
-                      style="background: none; border: none; color: red; cursor: pointer;"
-                    )
-                      i(class="fa fa-trash")
+              each flight in thing.flights
+                h5= flight.name
+                ol
+                  each file in flight.files
+                    li(style="display: flex; justify-content: space-between; align-items: center;")
+                      a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
+                      button(
+                        class="delete-button"
+                        data-path=encodeURIComponent(file.path)
+                        title="Delete"
+                        style="background: none; border: none; color: red; cursor: pointer;"
+                      )
+                        i(class="fa fa-trash")
 
+    script.
+      function submitBulkForm(action) {
+        event.preventDefault();
+        const selected = document.querySelectorAll('input[name="folders"]:checked');
+        if (selected.length === 0) {
+          alert('Please select at least one folder.');
+          return;
+        }
+
+        if (action === 'delete') {
+          const confirmed = confirm(`Are you sure you want to permanently delete ${selected.length} folder(s)?`);
+          if (!confirmed) return;
+        }
+
+        document.getElementById('bulkAction').value = action;
+        document.getElementById('bulkForm').submit();
+      }
 
 
     script(src="/static/script.js")

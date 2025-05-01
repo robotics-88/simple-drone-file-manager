@@ -141,6 +141,43 @@ app.use((error, request, response, next)=> {
   response.render('error', { error: error.stack })
 })
 
+// Multi-select
+app.post('/', express.urlencoded({ extended: true }), async (req, res, next) => {
+  try {
+    const { _action, folders } = req.body
+
+    if (!folders) return res.redirect('/')
+    const folderList = Array.isArray(folders) ? folders : [folders]
+
+    if (_action === 'delete') {
+      await Promise.all(
+        folderList.map(folder => fs.rm(path.join(PUBLIC_DIRECTORY, folder), { recursive: true, force: true }))
+      )
+      return res.redirect('/')
+    }
+
+    if (_action === 'download') {
+      res.writeHead(200, {
+        "Content-Type": "application/zip",
+        "Content-Disposition": "attachment; filename=selected-folders.zip"
+      })
+
+      const zip = archiver('zip', { zlib: { level: 9 } })
+      zip.on('warning', next)
+      zip.on('error', next)
+      zip.pipe(res)
+
+      folderList.forEach(folder => {
+        zip.directory(path.join(PUBLIC_DIRECTORY, folder), folder)
+      })
+
+      await zip.finalize()
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
 
 // Start Server
 app.listen(PORT, ()=> { console.log("Listening on port", PORT)})
