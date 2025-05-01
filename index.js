@@ -124,14 +124,14 @@ app.get('/download/:filePath(*)', async (req, res, next) => {
 
 
 // Delete File
-app.get('/delete/:fileName', async (request, response, next)=> {
+app.delete('/delete/:filePath(*)', async (req, res, next) => {
   try {
-    let fileName = request.params.fileName
-    let files = await fs.readdir(PUBLIC_DIRECTORY)
-    await fs.unlink(PUBLIC_DIRECTORY + fileName)
-    response.redirect('/')
+    const filePath = path.join(PUBLIC_DIRECTORY, req.params.filePath)
+    await fs.unlink(filePath)
+    res.status(200).send({ success: true })
+  } catch (error) {
+    next(error)
   }
-  catch (error) { next(error) }
 })
 
 

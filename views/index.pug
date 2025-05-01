@@ -10,6 +10,7 @@ html
     link(rel="icon" type="image/png" sizes="32x32"   href="/static/favicon-32x32.png")
     link(rel="apple-touch-icon"      sizes="180x180" href="/static/apple-touch-icon.png")
     link(rel="manifest"                              href="/static/site.webmanifest")
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
 
     style.
       .content {
@@ -49,7 +50,16 @@ html
               h5= flight.name
               ol
                 each file in flight.files
-                  li
+                  li(style="display: flex; justify-content: space-between; align-items: center;")
                     a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
+                    button(
+                      class="delete-button"
+                      data-path=encodeURIComponent(file.path)
+                      title="Delete"
+                      style="background: none; border: none; color: red; cursor: pointer;"
+                    )
+                      i(class="fa fa-trash")
+
+
 
     script(src="/static/script.js")
