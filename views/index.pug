@@ -20,10 +20,14 @@ html
         display: inline-flex;
         align-items: center;
         font-size: 1.25em;
-        font-weight: bold;
         cursor: pointer;
         list-style-position: inside;
       }
+
+      summary.summary-label.bold {
+        font-weight: bold;
+      }
+
 
   body
     main
@@ -33,7 +37,9 @@ html
 
       each thing in structure
         details
-          summary.summary-label= thing.directory
+          - const hasSubfolder = thing.flights && thing.flights.length > 0;
+          summary(class=hasSubfolder ? "summary-label bold" : "summary-label")= thing.directory
+
 
           .content
             if thing.log
