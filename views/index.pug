@@ -5,21 +5,107 @@ html
     meta(name="viewport" content="width=device-width, initial-scale=1")
     title Robotics 88 File Manager
     link(rel="stylesheet" href="/static/pico.css")
+    link(rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png")
+    link(rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png")
+    link(rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png")
+    link(rel="manifest" href="/static/site.webmanifest")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css")
 
-    link(rel="icon" type="image/png" sizes="16x16"   href="/static/favicon-16x16.png")
-    link(rel="icon" type="image/png" sizes="32x32"   href="/static/favicon-32x32.png")
-    link(rel="apple-touch-icon"      sizes="180x180" href="/static/apple-touch-icon.png")
-    link(rel="manifest"                              href="/static/site.webmanifest")
+    style.
+      .content {
+        padding-left: 1.5em;
+      }
+
+      .sticky-toolbar {
+        position: fixed;
+        top: 1em;
+        right: 1em;
+        display: flex;
+        gap: 0.5em;
+        z-index: 1000;
+      }
+
+      .sticky-toolbar button {
+        font-size: 0.75rem;
+        padding: 0.3em 0.6em;
+        border-radius: 6px;
+      }
+
+      summary.summary-label {
+        display: inline-flex;
+        align-items: center;
+        font-size: 1.25em;
+        cursor: pointer;
+        list-style-position: inside;
+      }
+
+      summary.summary-label.bold {
+        font-weight: bold;
+      }
+
+      summary.summary-label input[type="checkbox"] {
+        margin: 0 0.5em 0 0;
+      }
+
+
   body
     main
-      h1 File Manager
-      each thing in structure
-        p: b= 'Flight ' + thing.directory
-        p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
-        each flight in thing.flights
-          each files in flight
-            ol
-              each file in files
-                li: a(href='download/'+encodeURIComponent(file.path))=file.name
+      header(style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2em;")
+        h1 Robotics 88 File Manager
+        img(src="/static/logo.png" alt="Robotics 88 Logo" style="height: 48px;")
+
+      div(class="sticky-toolbar")
+        button(type="submit" onclick="submitBulkForm('download')" class="contrast secondary small")
+          i(class="fa fa-download") 
+        button(type="submit" onclick="submitBulkForm('delete')" class="contrast secondary small" style="color: red;")
+          i(class="fa fa-trash")
+
+      form#bulkForm(method="post")
+        input(type="hidden" name="_action" id="bulkAction")
+
+        each thing in structure
+          details
+            - const hasSubfolder = thing.flights && thing.flights.length > 0;
+            summary(class=hasSubfolder ? "summary-label bold" : "summary-label")
+              input(type="checkbox" name="folders" value=thing.directory style="margin-right: 0.5em;")
+              | #{thing.directory}
+
+
+            .content
+              if thing.log
+                p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
+
+              each flight in thing.flights
+                h5= flight.name
+                ol
+                  each file in flight.files
+                    li(style="display: flex; justify-content: space-between; align-items: center;")
+                      a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
+                      button(
+                        class="delete-button"
+                        data-path=encodeURIComponent(file.path)
+                        title="Delete"
+                        style="background: none; border: none; color: red; cursor: pointer;"
+                      )
+                        i(class="fa fa-trash")
+
+    script.
+      function submitBulkForm(action) {
+        event.preventDefault();
+        const selected = document.querySelectorAll('input[name="folders"]:checked');
+        if (selected.length === 0) {
+          alert('Please select at least one folder.');
+          return;
+        }
+
+        if (action === 'delete') {
+          const confirmed = confirm(`Are you sure you want to permanently delete ${selected.length} folder(s)?`);
+          if (!confirmed) return;
+        }
+
+        document.getElementById('bulkAction').value = action;
+        document.getElementById('bulkForm').submit();
+      }
+
 
     script(src="/static/script.js")
