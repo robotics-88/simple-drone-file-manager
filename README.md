@@ -1,13 +1,13 @@
 
-# Cocoon
+# Simple Drone File Manager
 
-A file manager for (d)eccos.
+A file manager for drones exposing public directory ROS2 bags (mcaps), video, and laz files for easy download.
 
 ## but how do I...???!!!
 
 ```sh
-git clone git@github.com:robotics-88/cocoon.git
-cd cocoon
+git clone git@github.com:robotics-88/simple-drone-file-manager.git
+cd simple-drone-file-manager
 npm install
 ```
 
