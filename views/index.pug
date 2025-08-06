@@ -76,18 +76,25 @@ html
                 p: a(href='download/'+encodeURIComponent(thing.log)) Flight Log
 
               each flight in thing.flights
-                h5= flight.name
-                ol
-                  each file in flight.files
-                    li(style="display: flex; justify-content: space-between; align-items: center;")
-                      a(href='download/'+encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
-                      button(
-                        class="delete-button"
-                        data-path=encodeURIComponent(file.path)
-                        title="Delete"
-                        style="background: none; border: none; color: red; cursor: pointer;"
-                      )
-                        i(class="fa fa-trash")
+                details
+                  summary.summary-label
+                    | 📂 #{flight.name}
+
+                  ol.content
+                    if flight.files.length === 0
+                      li (No files)
+                    else
+                      each file in flight.files
+                        li(style="display: flex; justify-content: space-between; align-items: center;")
+                          a(href='download/' + encodeURIComponent(file.path)) #{file.name} (#{file.displaySize})
+                          button(
+                            class="delete-button"
+                            data-path=encodeURIComponent(file.path)
+                            title="Delete"
+                            style="background: none; border: none; color: red; cursor: pointer;"
+                          )
+                            i(class="fa fa-trash")
+
 
     script.
       function submitBulkForm(action) {

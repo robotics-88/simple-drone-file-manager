@@ -2,7 +2,6 @@ import 'dotenv/config'
 
 
 import fs from 'node:fs/promises'
-import fss from 'node:fs'
 import express from 'express'
 import archiver from 'archiver'
 import path from 'node:path'
@@ -17,81 +16,106 @@ let app = express()
 app.set('view engine', 'pug')
 app.use('/static', express.static('static'))
 
-// Home Page
-app.get('/', async (request, response, next)=> {
+function formatSize(sizeInBytes) {
+  const KB = 1024
+  const MB = KB * 1024
+  const GB = MB * 1024
+
+  if (sizeInBytes >= GB) return `${(sizeInBytes / GB).toFixed(1)} GB`
+  if (sizeInBytes >= MB) return `${(sizeInBytes / MB).toFixed(1)} MB`
+  return `${(sizeInBytes / KB).toFixed(1)} KB`
+}
+
+// Helper function: Recursively list all files in the flight directory
+async function walkFilesRecursively(dir) {
+  let entries
   try {
-    let options = { withFileTypes: true }
-    let options2 = { withFileTypes: true, recursive: true }
+    entries = await fs.readdir(dir, { withFileTypes: true })
+  } catch (e) {
+    console.warn(`Cannot read directory ${dir}: ${e.message}`)
+    return []
+  }
 
-    function formatSize(sizeInBytes) {
-      const KB = 1024
-      const MB = KB * 1024
-      const GB = MB * 1024
-    
-      if (sizeInBytes >= GB) {
-        return `${(sizeInBytes / GB).toFixed(1)} GB`
-      } else if (sizeInBytes >= MB) {
-        return `${(sizeInBytes / MB).toFixed(1)} MB`
-      } else {
-        return `${(sizeInBytes / KB).toFixed(1)} KB`
+  let files = []
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name)
+
+    if (entry.isDirectory()) {
+      const nested = await walkFilesRecursively(fullPath)
+      files = files.concat(nested)
+    } else if (entry.isFile()) {
+      try {
+        const stat = await fs.stat(fullPath)
+        files.push({
+          path: path.relative(PUBLIC_DIRECTORY, fullPath),
+          name: path.basename(fullPath),
+          mtime: stat.mtime,
+          size: stat.size,
+          displaySize: formatSize(stat.size)
+        })
+      } catch (e) {
+        console.warn(`Failed to stat file ${fullPath}: ${e.message}`)
       }
-    }    
+    } else {
+      console.warn(`Skipping non-file entry: ${fullPath} (type: ${entry.constructor.name})`)
+    }
+  }
 
-    let dirs = await fs.readdir(PUBLIC_DIRECTORY, options)
+  return files
+}
 
-    let structure = dirs
-      .filter(d => d.isDirectory())
-      .map(d => {
-        const dirPath = path.join(PUBLIC_DIRECTORY, d.name)
-        const flightDirs = fss.readdirSync(dirPath, options).filter(f => f.isDirectory())
+// Home Page
+app.get('/', async (request, response, next) => {
+  try {
 
-        const flights = flightDirs.map(f => {
-          const flightPath = path.join(dirPath, f.name)
+    const topDirs = await fs.readdir(PUBLIC_DIRECTORY, { withFileTypes: true })
+    const structure = await Promise.all(
+      topDirs
+        .filter(d => d.isDirectory())
+        .map(async d => {
+          try {
+            const dirPath = path.join(PUBLIC_DIRECTORY, d.name)
 
-          const allFiles = fss.readdirSync(flightPath, options2)
-            .filter(f => f.isFile())
-            .map(f => {
-              const fullPath = path.join(flightPath, f.name)
-              try {
-                const stat = fss.statSync(fullPath)
-                const relativePath = path.relative(PUBLIC_DIRECTORY, fullPath)
+            const flightDirs = (await fs.readdir(dirPath, { withFileTypes: true }))
+              .filter(f => f.isDirectory())
+
+            const flights = await Promise.all(
+              flightDirs.map(async f => {
+                const flightPath = path.join(dirPath, f.name)
+                let allFiles = await walkFilesRecursively(flightPath)
+                  .then(files => files.sort((a, b) => b.mtime - a.mtime))
+
                 return {
-                  path: relativePath,
                   name: f.name,
-                  mtime: stat.mtime,
-                  size: stat.size,
-                  displaySize: formatSize(stat.size)
+                  files: allFiles.filter(x => x !== null).sort((a, b) => b.mtime - a.mtime)
                 }
-              } catch {
-                return null
-              }
-            })
-            .filter(f => f !== null)
-            .sort((a, b) => b.mtime - a.mtime) // you can remove this line if you want inner files unsorted too
+              })
+            )
 
-          return {
-            name: f.name,
-            files: allFiles
+            const logFile = (await fs.readdir(dirPath, { withFileTypes: true }))
+              .filter(f => f.isFile() && f.name.endsWith('.log'))
+              .map(f => path.relative(PUBLIC_DIRECTORY, path.join(dirPath, f.name)))[0] ?? null
+
+            return {
+              directory: d.name,
+              flights,
+              log: logFile
+            }
+          } catch (err) {
+            console.warn(`Skipping folder ${d.name}: ${err.message}`)
+            return null
           }
         })
+    )
 
-        const log = fss.readdirSync(dirPath, options)
-          .filter(f => f.isFile() && f.name.endsWith('.log'))
-          .map(l => path.relative(PUBLIC_DIRECTORY, path.join(dirPath, l.name)))[0] ?? null
-
-        return {
-          directory: d.name,
-          flights,
-          log
-        }
-      })
-      .sort((a, b) => b.directory.localeCompare(a.directory)) // ← only sort the outermost folders
-
-    response.render('index', { structure })
+    response.render('index', {
+      structure: structure.filter(x => x !== null).sort((a, b) => b.directory.localeCompare(a.directory))
+    })
+  } catch (error) {
+    next(error)
   }
-  catch (error) { next(error) }
 })
-
 
 // Download All Files
 app.get('/download-all', (request, response, next)=> {
